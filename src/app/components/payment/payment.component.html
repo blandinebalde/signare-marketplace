@@ -1,0 +1,231 @@
+<div class="payment-container fade-in">
+  <div *ngIf="paymentSuccess" class="success-container">
+    <div class="success-card">
+      <div class="success-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <h1>Commande confirmée!</h1>
+      <p class="success-message">Votre commande a été enregistrée avec succès.</p>
+      <div class="order-info" *ngIf="order">
+        <mat-card class="info-card">
+          <mat-card-content>
+            <div class="info-item">
+              <mat-icon>receipt</mat-icon>
+              <div>
+                <label>Numéro de commande</label>
+                <span class="order-number">{{ order.numeroCommande }}</span>
+              </div>
+            </div>
+            <div class="info-item">
+              <mat-icon>attach_money</mat-icon>
+              <div>
+                <label>Montant total</label>
+                <span class="order-amount">{{ order.totalAmount | number }} FCFA</span>
+              </div>
+            </div>
+            <div class="info-item" *ngIf="order.delivery">
+              <mat-icon>local_shipping</mat-icon>
+              <div>
+                <label>Mode de livraison</label>
+                <span>Livraison à domicile</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <div class="pdf-download" *ngIf="pdfUrl">
+        <p class="pdf-info">Un PDF avec les détails de votre commande a été téléchargé.</p>
+        <button mat-stroked-button (click)="downloadPDF()">
+          <mat-icon>picture_as_pdf</mat-icon>
+          <span>Télécharger à nouveau le PDF</span>
+        </button>
+      </div>
+      <button mat-raised-button color="primary" (click)="goHome()" class="home-button">
+        <mat-icon>home</mat-icon>
+        <span>Retour à l'accueil</span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!paymentSuccess && order" class="payment-content">
+    <div class="hero-banner">
+      <div class="hero-content">
+        <h1><mat-icon>payment</mat-icon> Paiement</h1>
+        <p>Choisissez votre mode de paiement</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="payment-layout">
+        <div class="order-section">
+          <mat-card class="order-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>receipt_long</mat-icon>
+                Détails de la commande
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="order-details">
+                <div class="detail-item">
+                  <mat-icon>qr_code</mat-icon>
+                  <div>
+                    <label>Numéro de commande</label>
+                    <span>{{ order.numeroCommande }}</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <mat-icon>calendar_today</mat-icon>
+                  <div>
+                    <label>Date</label>
+                    <span>{{ order.dateCommande | date:'dd/MM/yyyy à HH:mm' }}</span>
+                  </div>
+                </div>
+                <div class="detail-item" *ngIf="order.delivery">
+                  <mat-icon>local_shipping</mat-icon>
+                  <div>
+                    <label>Mode</label>
+                    <span>Livraison à domicile</span>
+                  </div>
+                </div>
+                <div class="detail-item highlight">
+                  <mat-icon>attach_money</mat-icon>
+                  <div>
+                    <label>Montant à payer</label>
+                    <span class="amount">{{ order.totalAmount | number }} FCFA</span>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <div class="form-section">
+          <mat-card class="payment-form-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>payment</mat-icon>
+                Mode de paiement
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()">
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Choisir le mode de paiement *</mat-label>
+                  <mat-select formControlName="paymentMethod">
+                    <mat-option *ngFor="let method of paymentMethods" [value]="method.value">
+                      <div class="payment-option">
+                        <mat-icon>{{ method.icon }}</mat-icon>
+                        <span>{{ method.label }}</span>
+                      </div>
+                    </mat-option>
+                  </mat-select>
+                  <mat-icon matPrefix>account_balance_wallet</mat-icon>
+                  <mat-error *ngIf="paymentForm.get('paymentMethod')?.hasError('required')">
+                    Le mode de paiement est requis
+                  </mat-error>
+                </mat-form-field>
+
+                <div *ngIf="paymentForm.get('paymentMethod')?.value === 'ORANGE_MONEY'">
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Numéro de téléphone *</mat-label>
+                    <input matInput formControlName="numeroTelephone" placeholder="Ex: 771234567" type="tel">
+                    <mat-icon matPrefix>phone_android</mat-icon>
+                    <mat-error *ngIf="paymentForm.get('numeroTelephone')?.hasError('required')">
+                      Le numéro de téléphone est requis
+                    </mat-error>
+                    <mat-error *ngIf="paymentForm.get('numeroTelephone')?.hasError('pattern')">
+                      Format invalide (8-10 chiffres)
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Opérateur *</mat-label>
+                    <mat-select formControlName="operateur">
+                      <mat-option *ngFor="let op of operators" [value]="op.value">
+                        {{ op.label }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>account_balance_wallet</mat-icon>
+                    <mat-error *ngIf="paymentForm.get('operateur')?.hasError('required')">
+                      L'opérateur est requis
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Nom du titulaire *</mat-label>
+                    <input matInput formControlName="titulaire" placeholder="Nom complet du titulaire">
+                    <mat-icon matPrefix>person</mat-icon>
+                    <mat-error *ngIf="paymentForm.get('titulaire')?.hasError('required')">
+                      Le nom du titulaire est requis
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <div *ngIf="paymentForm.get('paymentMethod')?.value === 'WAVE'">
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Numéro de téléphone Wave *</mat-label>
+                    <input matInput formControlName="numeroTelephone" placeholder="Ex: 771234567" type="tel">
+                    <mat-icon matPrefix>phone_android</mat-icon>
+                    <mat-error *ngIf="paymentForm.get('numeroTelephone')?.hasError('required')">
+                      Le numéro de téléphone est requis
+                    </mat-error>
+                    <mat-error *ngIf="paymentForm.get('numeroTelephone')?.hasError('pattern')">
+                      Format invalide (8-10 chiffres)
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Nom du titulaire *</mat-label>
+                    <input matInput formControlName="titulaire" placeholder="Nom complet du titulaire">
+                    <mat-icon matPrefix>person</mat-icon>
+                    <mat-error *ngIf="paymentForm.get('titulaire')?.hasError('required')">
+                      Le nom du titulaire est requis
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <div *ngIf="paymentForm.get('paymentMethod')?.value === 'LIVRAISON'">
+                  <mat-card class="info-card-delivery">
+                    <mat-card-content>
+                      <div class="delivery-info">
+                        <mat-icon>info</mat-icon>
+                        <div>
+                          <p><strong>Paiement à la livraison</strong></p>
+                          <p>Votre commande sera mise en attente. Vous pourrez la modifier ou la payer plus tard.</p>
+                        </div>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+
+                <mat-form-field appearance="outline" class="form-field" *ngIf="paymentForm.get('paymentMethod')?.value !== 'LIVRAISON'">
+                  <mat-label>Description (optionnel)</mat-label>
+                  <textarea matInput formControlName="description" rows="2" placeholder="Note ou référence supplémentaire..."></textarea>
+                  <mat-icon matPrefix>note</mat-icon>
+                </mat-form-field>
+
+                <div class="payment-actions">
+                  <button mat-raised-button 
+                          color="primary" 
+                          type="submit" 
+                          [disabled]="loading || paymentForm.invalid"
+                          class="pay-button">
+                    <mat-spinner *ngIf="loading" diameter="20" style="display: inline-block; margin-right: 10px;"></mat-spinner>
+                    <mat-icon *ngIf="!loading">payment</mat-icon>
+                    <span>{{ loading ? 'Traitement...' : (paymentForm.get('paymentMethod')?.value === 'LIVRAISON' ? 'Confirmer la commande' : 'Payer ' + (order.totalAmount | number) + ' FCFA') }}</span>
+                  </button>
+                </div>
+              </form>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!order && !loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Chargement de la commande...</p>
+  </div>
+</div>

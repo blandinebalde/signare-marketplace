@@ -1,0 +1,146 @@
+<div class="cart-container fade-in">
+  <div class="hero-banner">
+    <div class="hero-content">
+      <h1><mat-icon>shopping_cart</mat-icon> Mon Panier</h1>
+      <p>Révisez vos articles avant de passer commande</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div *ngIf="cartItems.length === 0" class="empty-cart">
+      <div class="empty-cart-icon">
+        <mat-icon>shopping_cart</mat-icon>
+      </div>
+      <h2>Votre panier est vide</h2>
+      <p>Commencez à ajouter des produits à votre panier pour continuer</p>
+      <button mat-raised-button color="primary" routerLink="/" class="shop-button">
+        <mat-icon>store</mat-icon>
+        <span>Continuer les achats</span>
+      </button>
+    </div>
+
+    <div *ngIf="cartItems.length > 0" class="cart-content">
+      <div class="cart-items-section">
+        <mat-card class="cart-header-card">
+          <mat-card-content>
+            <div class="cart-header">
+              <h2>
+                <mat-icon>shopping_bag</mat-icon>
+                Articles ({{ cartItems.length }})
+              </h2>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <div class="cart-items">
+          <mat-card *ngFor="let item of cartItems; let i = index" class="cart-item-card" [style.animation-delay]="i * 0.1 + 's'">
+            <mat-card-content>
+              <div class="cart-item-content">
+                <div class="item-image-section">
+                  <div class="item-image-placeholder">
+                    <mat-icon>image</mat-icon>
+                  </div>
+                </div>
+                
+                <div class="item-details">
+                  <h3 class="item-name">{{ item.productName }}</h3>
+                  <div class="item-meta">
+                    <span class="meta-item">
+                      <mat-icon>qr_code</mat-icon>
+                      {{ item.productCode }}
+                    </span>
+                    <span class="meta-item">
+                      <mat-icon>warehouse</mat-icon>
+                      {{ item.entrepotNom }}
+                    </span>
+                  </div>
+                  <div class="item-price-info">
+                    <span class="unit-price">{{ item.unitPrice | number }} FCFA / unité</span>
+                  </div>
+                </div>
+                
+                <div class="item-controls">
+                  <div class="quantity-section">
+                    <label>Quantité</label>
+                    <div class="quantity-control">
+                      <button mat-icon-button 
+                              class="quantity-btn"
+                              (click)="updateQuantity(item, item.quantity - 1)"
+                              [disabled]="item.quantity <= 1">
+                        <mat-icon>remove</mat-icon>
+                      </button>
+                      <div class="quantity-display">
+                        <span>{{ item.quantity }}</span>
+                      </div>
+                      <button mat-icon-button 
+                              class="quantity-btn"
+                              (click)="updateQuantity(item, item.quantity + 1)">
+                        <mat-icon>add</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div class="subtotal-section">
+                    <label>Sous-total</label>
+                    <div class="subtotal-amount">{{ item.subtotal | number }} FCFA</div>
+                  </div>
+                  
+                  <button mat-icon-button 
+                          color="warn" 
+                          class="delete-btn"
+                          (click)="removeItem(item)"
+                          matTooltip="Retirer du panier">
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+
+      <div class="cart-summary-section">
+        <mat-card class="summary-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>receipt</mat-icon>
+              Récapitulatif
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-details">
+              <div class="summary-item">
+                <span>Articles:</span>
+                <span>{{ cartItems.length }}</span>
+              </div>
+              <div class="summary-item">
+                <span>Total articles:</span>
+                <span>{{ getCartItemCount() }}</span>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-total">
+                <span>Total à payer:</span>
+                <span class="total-amount">{{ total | number }} FCFA</span>
+              </div>
+            </div>
+          </mat-card-content>
+          <mat-card-actions class="summary-actions">
+            <button mat-stroked-button 
+                    class="clear-btn"
+                    (click)="clearCart()">
+              <mat-icon>delete_sweep</mat-icon>
+              <span>Vider le panier</span>
+            </button>
+            <button mat-raised-button 
+                    color="primary" 
+                    class="checkout-btn"
+                    (click)="proceedToCheckout()">
+              <mat-icon>shopping_cart_checkout</mat-icon>
+              <span>Passer la commande</span>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>

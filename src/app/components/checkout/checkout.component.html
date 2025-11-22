@@ -1,0 +1,187 @@
+<div class="checkout-container fade-in">
+  <div class="hero-banner">
+    <div class="hero-content">
+      <h1><mat-icon>shopping_cart_checkout</mat-icon> Finaliser la commande</h1>
+      <p>Remplissez vos informations pour compléter votre commande</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="checkout-content">
+      <div class="form-section">
+        <mat-card class="form-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>person</mat-icon>
+              Informations client
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Nom *</mat-label>
+                  <input matInput formControlName="clientNom" required>
+                  <mat-icon matPrefix>person</mat-icon>
+                  <mat-error *ngIf="checkoutForm.get('clientNom')?.hasError('required')">
+                    Le nom est requis
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Prénom</mat-label>
+                  <input matInput formControlName="clientPrenom">
+                  <mat-icon matPrefix>person_outline</mat-icon>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Téléphone *</mat-label>
+                  <input matInput formControlName="clientTelephone" required type="tel">
+                  <mat-icon matPrefix>phone</mat-icon>
+                  <mat-error *ngIf="checkoutForm.get('clientTelephone')?.hasError('required')">
+                    Le téléphone est requis
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Email</mat-label>
+                  <input matInput type="email" formControlName="clientEmail">
+                  <mat-icon matPrefix>email</mat-icon>
+                  <mat-error *ngIf="checkoutForm.get('clientEmail')?.hasError('email')">
+                    Email invalide
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <mat-card class="delivery-option-card">
+                <mat-card-content>
+                  <div class="delivery-option">
+                    <mat-checkbox formControlName="delivery" class="delivery-checkbox">
+                      <div class="delivery-label">
+                        <mat-icon>local_shipping</mat-icon>
+                        <span>Livraison à domicile</span>
+                      </div>
+                    </mat-checkbox>
+                    <p class="delivery-hint">Cochez cette case si vous souhaitez que votre commande soit livrée</p>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <div *ngIf="checkoutForm.get('delivery')?.value" class="delivery-fields">
+                <mat-form-field appearance="outline" class="form-field full-width">
+                  <mat-label>Adresse de livraison *</mat-label>
+                  <textarea matInput formControlName="clientAdresse" rows="2" placeholder="Rue, numéro, quartier..."></textarea>
+                  <mat-icon matPrefix>home</mat-icon>
+                  <mat-error *ngIf="checkoutForm.get('clientAdresse')?.hasError('required')">
+                    L'adresse est requise pour la livraison
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field full-width">
+                  <mat-label>Ville *</mat-label>
+                  <input matInput formControlName="clientVille" placeholder="Ex: Dakar">
+                  <mat-icon matPrefix>location_city</mat-icon>
+                  <mat-error *ngIf="checkoutForm.get('clientVille')?.hasError('required')">
+                    La ville est requise pour la livraison
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="form-field full-width">
+                  <mat-label>Zone de livraison *</mat-label>
+                  <mat-select formControlName="deliveryZone" required>
+                    <mat-option *ngFor="let zone of deliveryZones" [value]="zone.id">
+                      <div class="zone-option">
+                        <span class="zone-name">{{ zone.zone }}</span>
+                        <span class="zone-price">{{ zone.price | number }} FCFA</span>
+                      </div>
+                    </mat-option>
+                  </mat-select>
+                  <mat-icon matPrefix>location_on</mat-icon>
+                  <mat-hint *ngIf="loadingZones">Chargement des zones...</mat-hint>
+                  <mat-error *ngIf="checkoutForm.get('deliveryZone')?.hasError('required')">
+                    La zone de livraison est requise
+                  </mat-error>
+                </mat-form-field>
+
+                <div *ngIf="getSelectedZoneDescription()" class="zone-description-info">
+                  <mat-icon>info</mat-icon>
+                  <span>{{ getSelectedZoneDescription() }}</span>
+                </div>
+
+                <mat-form-field appearance="outline" class="form-field full-width">
+                  <mat-label>Description détaillée de l'adresse *</mat-label>
+                  <textarea matInput formControlName="deliveryDescription" rows="4" 
+                            placeholder="Indiquez des repères pour faciliter la livraison (ex: près de l'école, derrière le marché, maison bleue, etc.)"></textarea>
+                  <mat-icon matPrefix>description</mat-icon>
+                  <mat-hint>Ajoutez des détails pour faciliter la localisation de votre adresse</mat-hint>
+                  <mat-error *ngIf="checkoutForm.get('deliveryDescription')?.hasError('required')">
+                    La description détaillée est requise
+                  </mat-error>
+                </mat-form-field>
+
+                <div *ngIf="deliveryPrice > 0" class="delivery-price-info">
+                  <mat-icon>attach_money</mat-icon>
+                  <span>Frais de livraison: <strong>{{ deliveryPrice | number }} FCFA</strong></span>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button mat-stroked-button type="button" routerLink="/cart" class="back-btn">
+                  <mat-icon>arrow_back</mat-icon>
+                  <span>Retour</span>
+                </button>
+                <button mat-raised-button 
+                        color="primary" 
+                        type="submit" 
+                        [disabled]="loading || checkoutForm.invalid || (checkoutForm.get('delivery')?.value && loadingZones)"
+                        class="submit-btn">
+                  <mat-spinner *ngIf="loading" diameter="20" style="display: inline-block; margin-right: 10px;"></mat-spinner>
+                  <mat-icon *ngIf="!loading">check_circle</mat-icon>
+                  <span>{{ loading ? 'Traitement...' : 'Valider la commande' }}</span>
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="summary-section">
+        <mat-card class="summary-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>receipt_long</mat-icon>
+              Récapitulatif
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-items">
+              <div class="summary-item" *ngFor="let item of cartItems">
+                <div class="item-info">
+                  <span class="item-name">{{ item.productName }}</span>
+                  <span class="item-quantity">x{{ item.quantity }} kg</span>
+                </div>
+                <span class="item-price">{{ item.subtotal | number }} FCFA</span>
+              </div>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-subtotal">
+              <span>Sous-total:</span>
+              <span>{{ total | number }} FCFA</span>
+            </div>
+            <div *ngIf="deliveryPrice > 0" class="summary-delivery">
+              <span>Frais de livraison:</span>
+              <span>{{ deliveryPrice | number }} FCFA</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-total">
+              <span>Total:</span>
+              <span class="total-amount">{{ finalTotal | number }} FCFA</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>

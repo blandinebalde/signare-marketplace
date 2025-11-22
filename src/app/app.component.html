@@ -1,0 +1,15 @@
+<mat-toolbar>
+  <mat-icon style="margin-right: 12px; font-size: 32px;">store</mat-icon>
+  <span>Marketplace Signare</span>
+  <span class="spacer"></span>
+  <button mat-icon-button [routerLink]="['/']" matTooltip="Accueil">
+    <mat-icon>home</mat-icon>
+  </button>
+  <button mat-icon-button [routerLink]="['/cart']" [matBadge]="cartService.getCartItemCount() > 0 ? cartService.getCartItemCount() : null" matTooltip="Panier">
+    <mat-icon>shopping_cart</mat-icon>
+  </button>
+</mat-toolbar>
+
+<main>
+  <router-outlet></router-outlet>
+</main>

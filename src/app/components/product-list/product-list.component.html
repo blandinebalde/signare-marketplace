@@ -1,0 +1,106 @@
+<div class="product-list-container fade-in">
+  <div class="hero-banner">
+    <div class="hero-content">
+      <h1><mat-icon>storefront</mat-icon> Nos Produits</h1>
+      <p>Découvrez notre sélection de produits disponibles</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Search Order Section -->
+    <mat-card class="search-order-card" style="margin-bottom: 1rem;">
+      <mat-card-content>
+        <div class="search-order-content">
+          <mat-icon class="search-icon">search</mat-icon>
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Rechercher une commande par numéro</mat-label>
+            <input matInput [(ngModel)]="searchOrderNumber" placeholder="Ex: CMD-001" (keyup.enter)="searchOrder()">
+            <mat-icon matSuffix>receipt</mat-icon>
+          </mat-form-field>
+          <button mat-raised-button color="primary" (click)="searchOrder()" [disabled]="!searchOrderNumber">
+            <mat-icon>search</mat-icon>
+            <span>Rechercher</span>
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="filter-section">
+      <mat-card class="filter-card">
+        <mat-card-content>
+          <div class="filter-content">
+            <mat-icon class="filter-icon">location_on</mat-icon>
+            <mat-form-field appearance="outline" class="entrepot-selector">
+              <mat-label>Choisir un entrepôt</mat-label>
+              <mat-select [(ngModel)]="selectedEntrepotId" (selectionChange)="onEntrepotChange()">
+                <mat-option *ngFor="let entrepot of entrepots" [value]="entrepot.id">
+                  <div class="entrepot-option">
+                    <mat-icon>warehouse</mat-icon>
+                    <span>{{ entrepot.nom }} - {{ entrepot.ville }}</span>
+                  </div>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner diameter="60"></mat-spinner>
+      <p>Chargement des produits...</p>
+    </div>
+
+    <div *ngIf="!loading && products.length === 0" class="empty-state">
+      <mat-icon>inventory_2</mat-icon>
+      <h2>Aucun produit disponible</h2>
+      <p>Aucun produit n'est disponible dans cet entrepôt pour le moment.</p>
+    </div>
+
+    <div class="product-grid" *ngIf="!loading && products.length > 0">
+      <mat-card *ngFor="let product of products; let i = index" class="product-card" [style.animation-delay]="i * 0.1 + 's'">
+        <div class="product-image-container">
+          <img *ngIf="product.imagePath" [src]="product.imagePath" alt="{{ product.nom }}" class="product-image">
+          <div *ngIf="!product.imagePath" class="product-image-placeholder">
+            <mat-icon>image</mat-icon>
+          </div>
+          <div class="stock-badge" [class.in-stock]="product.quantityAvailable > 0" [class.out-of-stock]="product.quantityAvailable === 0">
+            <mat-icon>{{ product.quantityAvailable > 0 ? 'check_circle' : 'cancel' }}</mat-icon>
+            <span>{{ product.quantityAvailable > 0 ? 'En stock' : 'Rupture' }}</span>
+          </div>
+        </div>
+        <mat-card-content class="product-content">
+          <h3 class="product-title">{{ product.nom }}</h3>
+          <p class="product-code">
+            <mat-icon>qr_code</mat-icon>
+            Code: {{ product.code }}
+          </p>
+          <p class="product-description">{{ product.description || 'Aucune description disponible' }}</p>
+          <div class="product-info">
+            <div class="info-item">
+              <mat-icon>warehouse</mat-icon>
+              <span>{{ product.entrepotNom }}</span>
+            </div>
+            <div class="info-item">
+              <mat-icon>inventory</mat-icon>
+              <span>{{ product.quantityAvailable }} kg</span>
+            </div>
+          </div>
+          <div class="product-price">
+            <span class="price-amount">{{ product.price | number }} FCFA</span>
+          </div>
+        </mat-card-content>
+        <mat-card-actions class="product-actions">
+          <button mat-raised-button 
+                  color="primary" 
+                  class="add-to-cart-btn"
+                  (click)="openQuantityDialog(product)" 
+                  [disabled]="product.quantityAvailable === 0">
+            <mat-icon>add_shopping_cart</mat-icon>
+            <span>Ajouter au panier</span>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>
