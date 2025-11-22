@@ -1,0 +1,122 @@
+<div class="contact-container">
+  <div class="hero-banner">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-icon">
+        <mat-icon>contact_support</mat-icon>
+      </div>
+      <h1>Contactez-nous</h1>
+      <p>Nous sommes là pour répondre à toutes vos questions</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="contact-content">
+      <div class="contact-form-card">
+        <div class="card-header">
+          <div class="header-icon">
+            <mat-icon>mail</mat-icon>
+          </div>
+          <h2>Envoyez-nous un message</h2>
+        </div>
+        <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name" class="input-label">Nom complet *</label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">person</mat-icon>
+                <input type="text" id="name" formControlName="name" required placeholder="Votre nom complet" class="text-input">
+              </div>
+              <span class="error-message" *ngIf="contactForm.get('name')?.hasError('required') && contactForm.get('name')?.touched">
+                Le nom est requis
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="email" class="input-label">Email *</label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">email</mat-icon>
+                <input type="email" id="email" formControlName="email" required placeholder="votre@email.com" class="text-input">
+              </div>
+              <span class="error-message" *ngIf="contactForm.get('email')?.hasError('required') && contactForm.get('email')?.touched">
+                L'email est requis
+              </span>
+              <span class="error-message" *ngIf="contactForm.get('email')?.hasError('email') && contactForm.get('email')?.touched">
+                Email invalide
+              </span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="phone" class="input-label">Téléphone *</label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">phone</mat-icon>
+                <input type="tel" id="phone" formControlName="phone" required placeholder="+221 XX XXX XX XX" class="text-input">
+              </div>
+              <span class="error-message" *ngIf="contactForm.get('phone')?.hasError('required') && contactForm.get('phone')?.touched">
+                Le téléphone est requis
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="subject" class="input-label">Sujet *</label>
+              <div class="input-wrapper">
+                <mat-icon class="input-icon">topic</mat-icon>
+                <input type="text" id="subject" formControlName="subject" required placeholder="Sujet de votre message" class="text-input">
+              </div>
+              <span class="error-message" *ngIf="contactForm.get('subject')?.hasError('required') && contactForm.get('subject')?.touched">
+                Le sujet est requis
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="message" class="input-label">Message *</label>
+            <div class="textarea-wrapper">
+              <mat-icon class="input-icon">message</mat-icon>
+              <textarea id="message" formControlName="message" rows="6" required
+                        placeholder="Décrivez votre demande ou votre question..." class="text-input textarea-input"></textarea>
+            </div>
+            <span class="error-message" *ngIf="contactForm.get('message')?.hasError('required') && contactForm.get('message')?.touched">
+              Le message est requis
+            </span>
+            <span class="error-message" *ngIf="contactForm.get('message')?.hasError('minlength') && contactForm.get('message')?.touched">
+              Le message doit contenir au moins 10 caractères
+            </span>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" 
+                    [disabled]="loading || contactForm.invalid"
+                    class="submit-button">
+              <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+              <mat-icon *ngIf="!loading">send</mat-icon>
+              <span>{{ loading ? 'Envoi...' : 'Envoyer le message' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="contact-info-card">
+        <div class="card-header">
+          <div class="header-icon">
+            <mat-icon>info</mat-icon>
+          </div>
+          <h2>Informations de contact</h2>
+        </div>
+        <div class="info-content">
+          <div class="contact-info-item" *ngFor="let info of contactInfo">
+            <div class="info-icon-wrapper">
+              <mat-icon class="info-icon">{{ info.icon }}</mat-icon>
+            </div>
+            <div class="info-details">
+              <h3>{{ info.title }}</h3>
+              <p *ngFor="let detail of info.details">{{ detail }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

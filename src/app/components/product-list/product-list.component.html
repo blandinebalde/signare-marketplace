@@ -1,106 +1,92 @@
-<div class="product-list-container fade-in">
-  <div class="hero-banner">
-    <div class="hero-content">
-      <h1><mat-icon>storefront</mat-icon> Nos Produits</h1>
-      <p>Découvrez notre sélection de produits disponibles</p>
-    </div>
-  </div>
-
+<div class="product-list-container">
   <div class="container">
-    <!-- Search Order Section -->
-    <mat-card class="search-order-card" style="margin-bottom: 1rem;">
-      <mat-card-content>
-        <div class="search-order-content">
-          <mat-icon class="search-icon">search</mat-icon>
-          <mat-form-field appearance="outline" class="search-field">
-            <mat-label>Rechercher une commande par numéro</mat-label>
-            <input matInput [(ngModel)]="searchOrderNumber" placeholder="Ex: CMD-001" (keyup.enter)="searchOrder()">
-            <mat-icon matSuffix>receipt</mat-icon>
-          </mat-form-field>
-          <button mat-raised-button color="primary" (click)="searchOrder()" [disabled]="!searchOrderNumber">
-            <mat-icon>search</mat-icon>
-            <span>Rechercher</span>
-          </button>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
+    <div class="hero-banner">
+      <div class="hero-overlay"></div>
+      <div class="hero-image-bg">
+        <img src="assets/image/vue-de-l-etal-de-poisson-sur-le-marche-de-sanarysurmer.jpg" alt="Poissonnerie">
+      </div>
+      <div class="hero-content">
+        <h1>SIGNARE POISSONNERIE</h1>
+        <p>Découvrez nos poissons frais de qualité, directement de la mer à votre table</p>
+      </div>
+    </div>
     <div class="filter-section">
-      <mat-card class="filter-card">
-        <mat-card-content>
-          <div class="filter-content">
-            <mat-icon class="filter-icon">location_on</mat-icon>
-            <mat-form-field appearance="outline" class="entrepot-selector">
-              <mat-label>Choisir un entrepôt</mat-label>
-              <mat-select [(ngModel)]="selectedEntrepotId" (selectionChange)="onEntrepotChange()">
-                <mat-option *ngFor="let entrepot of entrepots" [value]="entrepot.id">
-                  <div class="entrepot-option">
-                    <mat-icon>warehouse</mat-icon>
-                    <span>{{ entrepot.nom }} - {{ entrepot.ville }}</span>
-                  </div>
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
+      <div class="filter-card">
+        <div class="filter-header">
+          <h3>Filtres</h3>
+        </div>
+        <div class="filter-content">
+          <div class="filter-group">
+            <label>Entrepôt</label>
+            <select [(ngModel)]="selectedEntrepotId" (change)="onEntrepotChange()" class="filter-select">
+              <option [value]="null" disabled>Sélectionner un entrepôt</option>
+              <option *ngFor="let entrepot of entrepots" [value]="entrepot.id">
+                {{ entrepot.nom }} - {{ entrepot.ville }}
+              </option>
+            </select>
           </div>
-        </mat-card-content>
-      </mat-card>
+
+          <div class="filter-group" *ngIf="selectedEntrepotId">
+            <label>Rechercher</label>
+            <div class="search-input-wrapper">
+              <input type="text" 
+                     [(ngModel)]="searchProduct" 
+                     (input)="onSearchChange()"
+                     placeholder="Nom ou code produit..."
+                     class="filter-input">
+              <span class="search-icon">🔍</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div *ngIf="loading" class="loading-container">
-      <mat-spinner diameter="60"></mat-spinner>
-      <p>Chargement des produits...</p>
+      <mat-spinner diameter="32"></mat-spinner>
+      <p>Chargement...</p>
+    </div>
+
+    <div *ngIf="!loading && filteredProducts.length === 0 && products.length > 0" class="empty-state">
+      <p>Aucun produit trouvé</p>
     </div>
 
     <div *ngIf="!loading && products.length === 0" class="empty-state">
-      <mat-icon>inventory_2</mat-icon>
-      <h2>Aucun produit disponible</h2>
-      <p>Aucun produit n'est disponible dans cet entrepôt pour le moment.</p>
+      <p>Aucun produit disponible</p>
     </div>
 
-    <div class="product-grid" *ngIf="!loading && products.length > 0">
-      <mat-card *ngFor="let product of products; let i = index" class="product-card" [style.animation-delay]="i * 0.1 + 's'">
+    <div class="product-grid" *ngIf="!loading && filteredProducts.length > 0">
+      <div *ngFor="let product of filteredProducts" class="product-card">
         <div class="product-image-container">
-          <img *ngIf="product.imagePath" [src]="product.imagePath" alt="{{ product.nom }}" class="product-image">
-          <div *ngIf="!product.imagePath" class="product-image-placeholder">
+          <img *ngIf="hasValidImage(product)" 
+               [src]="getImageUrl(product.imagePath!)" 
+               [alt]="product.nom" 
+               class="product-image"
+               (error)="onImageError($event)"
+               (load)="onImageLoad($event)">
+          <div *ngIf="!hasValidImage(product)" class="product-image-placeholder">
             <mat-icon>image</mat-icon>
           </div>
           <div class="stock-badge" [class.in-stock]="product.quantityAvailable > 0" [class.out-of-stock]="product.quantityAvailable === 0">
-            <mat-icon>{{ product.quantityAvailable > 0 ? 'check_circle' : 'cancel' }}</mat-icon>
+            <span class="badge-dot"></span>
             <span>{{ product.quantityAvailable > 0 ? 'En stock' : 'Rupture' }}</span>
           </div>
         </div>
-        <mat-card-content class="product-content">
+        <div class="product-content">
           <h3 class="product-title">{{ product.nom }}</h3>
-          <p class="product-code">
-            <mat-icon>qr_code</mat-icon>
-            Code: {{ product.code }}
-          </p>
-          <p class="product-description">{{ product.description || 'Aucune description disponible' }}</p>
-          <div class="product-info">
-            <div class="info-item">
-              <mat-icon>warehouse</mat-icon>
-              <span>{{ product.entrepotNom }}</span>
-            </div>
-            <div class="info-item">
-              <mat-icon>inventory</mat-icon>
-              <span>{{ product.quantityAvailable }} kg</span>
-            </div>
-          </div>
           <div class="product-price">
             <span class="price-amount">{{ product.price | number }} FCFA</span>
+            <span class="price-unit">/ kg</span>
           </div>
-        </mat-card-content>
-        <mat-card-actions class="product-actions">
-          <button mat-raised-button 
-                  color="primary" 
-                  class="add-to-cart-btn"
+        </div>
+        <div class="product-actions">
+          <button class="add-to-cart-btn"
                   (click)="openQuantityDialog(product)" 
                   [disabled]="product.quantityAvailable === 0">
-            <mat-icon>add_shopping_cart</mat-icon>
-            <span>Ajouter au panier</span>
+            <span class="btn-icon">+</span>
+            <span>Ajouter</span>
           </button>
-        </mat-card-actions>
-      </mat-card>
+        </div>
+      </div>
     </div>
   </div>
 </div>

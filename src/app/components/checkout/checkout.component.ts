@@ -36,36 +36,26 @@ export class CheckoutComponent implements OnInit {
       clientPrenom: [''],
       clientTelephone: ['', Validators.required],
       clientEmail: ['', [Validators.email]],
-      clientAdresse: [''],
-      clientVille: [''],
-      deliveryZone: [''], // Zone de livraison
-      deliveryDescription: [''] // Description détaillée de l'adresse
+      deliveryZone: [''], // Zone de livraison sélectionnée
+      deliveryDescription: [''] // Description détaillée pour faciliter la localisation
     });
 
-    // Afficher les champs d'adresse si livraison
+    // Afficher les champs de livraison si livraison
     this.checkoutForm.get('delivery')?.valueChanges.subscribe(delivery => {
-      const adresseControl = this.checkoutForm.get('clientAdresse');
-      const villeControl = this.checkoutForm.get('clientVille');
       const zoneControl = this.checkoutForm.get('deliveryZone');
       const descriptionControl = this.checkoutForm.get('deliveryDescription');
       
       if (delivery) {
-        adresseControl?.setValidators([Validators.required]);
-        villeControl?.setValidators([Validators.required]);
         zoneControl?.setValidators([Validators.required]);
         descriptionControl?.setValidators([Validators.required]);
         this.loadDeliveryZones();
       } else {
-        adresseControl?.clearValidators();
-        villeControl?.clearValidators();
         zoneControl?.clearValidators();
         descriptionControl?.clearValidators();
         this.deliveryZones = [];
         this.deliveryPrice = 0;
         this.updateFinalTotal();
       }
-      adresseControl?.updateValueAndValidity();
-      villeControl?.updateValueAndValidity();
       zoneControl?.updateValueAndValidity();
       descriptionControl?.updateValueAndValidity();
     });
@@ -181,10 +171,10 @@ export class CheckoutComponent implements OnInit {
       clientPrenom: formValue.clientPrenom,
       clientTelephone: formValue.clientTelephone,
       clientEmail: formValue.clientEmail,
-      clientAdresse: formValue.clientAdresse,
-      clientVille: formValue.clientVille,
-      deliveryZone: selectedZone?.zone,
-      deliveryDescription: formValue.deliveryDescription,
+      clientAdresse: undefined, // Plus utilisé, remplacé par la zone
+      clientVille: undefined, // Plus utilisé, remplacé par la zone
+      deliveryZone: selectedZone?.zone, // Zone sélectionnée = adresse de livraison
+      deliveryDescription: formValue.deliveryDescription, // Description détaillée
       deliveryPrice: selectedZone?.price || 0,
       totalAmount: this.finalTotal
     };

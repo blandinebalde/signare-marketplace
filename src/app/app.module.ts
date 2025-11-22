@@ -29,6 +29,9 @@ import { OrderSearchDialogComponent } from './components/product-list/order-sear
 import { CartComponent } from './components/cart/cart.component';
 import { CheckoutComponent } from './components/checkout/checkout.component';
 import { PaymentComponent } from './components/payment/payment.component';
+import { OrderSearchComponent } from './components/order-search/order-search.component';
+import { TermsComponent } from './components/terms/terms.component';
+import { ContactComponent } from './components/contact/contact.component';
 import { AppRoutingModule } from './app-routing.module';
 
 @NgModule({
@@ -39,7 +42,10 @@ import { AppRoutingModule } from './app-routing.module';
     OrderSearchDialogComponent,
     CartComponent,
     CheckoutComponent,
-    PaymentComponent
+    PaymentComponent,
+    OrderSearchComponent,
+    TermsComponent,
+    ContactComponent
   ],
   imports: [
     BrowserModule,

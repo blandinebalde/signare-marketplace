@@ -1,0 +1,41 @@
+<div class="order-search-container fade-in">
+  <div class="hero-banner">
+    <div class="hero-content">
+      <h1><mat-icon>search</mat-icon> Rechercher une commande</h1>
+      <p>Entrez le numéro de votre commande pour consulter son statut</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <mat-card class="search-card">
+      <mat-card-content>
+        <div class="search-content">
+          <mat-icon class="search-icon-large">receipt_long</mat-icon>
+          <h2>Trouvez votre commande</h2>
+          <p class="search-hint">Entrez le numéro de commande que vous avez reçu lors de votre achat</p>
+          
+          <div class="search-form">
+            <div class="search-input-group">
+              <input type="text" 
+                     [(ngModel)]="searchOrderNumber" 
+                     placeholder="Ex: CMD-001" 
+                     (keyup.enter)="searchOrder()"
+                     [disabled]="loading"
+                     class="search-input">
+              <button mat-raised-button 
+                      color="primary" 
+                      (click)="searchOrder()" 
+                      [disabled]="!searchOrderNumber || loading"
+                      class="search-button">
+                <mat-spinner *ngIf="loading" diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                <mat-icon *ngIf="!loading">search</mat-icon>
+                <span>{{ loading ? 'Recherche...' : 'Rechercher' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+

@@ -1,0 +1,30 @@
+<div class="terms-container">
+  <div class="hero-banner">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-icon">
+        <mat-icon>gavel</mat-icon>
+      </div>
+      <h1>Conditions Générales</h1>
+      <p>Consultez nos conditions d'utilisation et de vente</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="terms-grid">
+      <div class="term-card" *ngFor="let section of sections; let i = index">
+        <div class="card-header">
+          <div class="card-icon">
+            <mat-icon>{{ section.icon }}</mat-icon>
+          </div>
+          <div class="card-number">{{ i + 1 }}</div>
+        </div>
+        <div class="card-content">
+          <h2>{{ section.title }}</h2>
+          <p>{{ section.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
