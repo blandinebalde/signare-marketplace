@@ -1,0 +1,71 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <div class="header-icon">
+      <mat-icon>receipt</mat-icon>
+    </div>
+    <h2>Commande {{ data.order.numeroCommande }}</h2>
+  </div>
+
+  <div class="dialog-content">
+    <div class="order-details">
+      <div class="detail-row">
+        <span class="label">
+          <mat-icon>calendar_today</mat-icon>
+          Date
+        </span>
+        <span class="value">{{ data.order.dateCommande | date:'dd/MM/yyyy à HH:mm' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">
+          <mat-icon>info</mat-icon>
+          Statut
+        </span>
+        <span class="value" [class]="getStatusClass(data.order.statut)">
+          {{ getStatusLabel(data.order.statut) }}
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="label">
+          <mat-icon>attach_money</mat-icon>
+          Montant
+        </span>
+        <span class="value amount">{{ data.order.totalAmount | number }} FCFA</span>
+      </div>
+      <div class="detail-row" *ngIf="data.order.delivery">
+        <span class="label">
+          <mat-icon>local_shipping</mat-icon>
+          Livraison
+        </span>
+        <span class="value">Oui</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">
+          <mat-icon>payment</mat-icon>
+          Payé
+        </span>
+        <span class="value" [class.paid]="data.order.isPaid" [class.unpaid]="!data.order.isPaid">
+          {{ data.order.isPaid ? 'Oui' : 'Non' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-actions">
+    <button type="button" class="action-button secondary" (click)="downloadPDF()">
+      <mat-icon>picture_as_pdf</mat-icon>
+      <span>Télécharger PDF</span>
+    </button>
+    <button type="button" 
+            class="action-button primary" 
+            *ngIf="!data.order.isPaid" 
+            (click)="payOrder()">
+      <mat-icon>phone_android</mat-icon>
+      <span>Payer par mobile money</span>
+    </button>
+    <button type="button" class="action-button cancel" (click)="onClose()">
+      <mat-icon>close</mat-icon>
+      <span>Annuler</span>
+    </button>
+  </div>
+</div>
+
