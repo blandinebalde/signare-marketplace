@@ -1,18 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MarketplaceService } from '../../services/marketplace.service';
 import { CartService } from '../../services/cart.service';
+import { RateLimitService } from '../../services/rate-limit.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MarketplaceOrderRequest } from '../../models/order.model';
 import { DeliveryPrice } from '../../models/delivery-price.model';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-checkout',
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.scss']
 })
-export class CheckoutComponent implements OnInit {
+export class CheckoutComponent implements OnInit, OnDestroy {
   checkoutForm: FormGroup;
   cartItems: any[] = [];
   total = 0;
@@ -22,11 +25,16 @@ export class CheckoutComponent implements OnInit {
   deliveryZones: DeliveryPrice[] = [];
   loadingZones = false;
   selectedEntrepotId: number | null = null;
+  captchaRequired = false;
+  captchaAttempts = 0;
+  captchaToken: string | null = null;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private marketplaceService: MarketplaceService,
     private cartService: CartService,
+    private rateLimitService: RateLimitService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {
@@ -92,11 +100,31 @@ export class CheckoutComponent implements OnInit {
     }
     
     // Subscribe to cart changes
-    this.cartService.cart$.subscribe(items => {
+    this.cartService.cart$.pipe(takeUntil(this.destroy$)).subscribe(items => {
       this.cartItems = items;
       this.total = this.cartService.getTotal();
       this.updateFinalTotal();
     });
+
+    // Subscribe to CAPTCHA requirement
+    this.rateLimitService.getCaptchaRequired()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(captcha => {
+        this.captchaRequired = captcha.required;
+        this.captchaAttempts = captcha.attempts;
+        if (this.captchaRequired) {
+          this.snackBar.open(
+            `Pour votre sécurité, veuillez compléter le CAPTCHA (${this.captchaAttempts} tentatives)`,
+            'Fermer',
+            { duration: 5000 }
+          );
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadDeliveryZones(): void {
@@ -145,6 +173,12 @@ export class CheckoutComponent implements OnInit {
       return;
     }
 
+    // Check if CAPTCHA is required but not provided
+    if (this.captchaRequired && !this.captchaToken) {
+      this.snackBar.open('Veuillez compléter le CAPTCHA pour continuer', 'Fermer', { duration: 3000 });
+      return;
+    }
+
     const formValue = this.checkoutForm.value;
     
     // Vérifier que tous les items sont du même entrepôt
@@ -180,6 +214,13 @@ export class CheckoutComponent implements OnInit {
     };
 
     this.loading = true;
+    
+    // Add CAPTCHA token if required
+    if (this.captchaToken) {
+      // TODO: Add captchaToken to orderRequest when CAPTCHA service is integrated
+      // orderRequest.captchaToken = this.captchaToken;
+    }
+
     this.marketplaceService.createOrder(orderRequest).subscribe({
       next: (response) => {
         this.loading = false;
@@ -206,9 +247,24 @@ export class CheckoutComponent implements OnInit {
       error: (error) => {
         this.loading = false;
         console.error('Order creation error:', error);
+        
+        // Handle rate limit errors (429) - already handled by interceptor, but show specific message
+        if (error.status === 429) {
+          // Message already shown by interceptor
+          return;
+        }
+        
         const errorMessage = error.error?.message || error.message || 'Erreur lors de la création de la commande';
         this.snackBar.open(errorMessage, 'Fermer', { duration: 5000 });
       }
     });
+  }
+
+  /**
+   * Handle CAPTCHA verification
+   * TODO: Integrate with CAPTCHA service (e.g., Google reCAPTCHA)
+   */
+  onCaptchaVerified(token: string): void {
+    this.captchaToken = token;
   }
 }

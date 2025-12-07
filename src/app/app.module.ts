@@ -33,6 +33,9 @@ import { OrderSearchComponent } from './components/order-search/order-search.com
 import { TermsComponent } from './components/terms/terms.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { AppRoutingModule } from './app-routing.module';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { RateLimitInterceptor } from './interceptors/rate-limit.interceptor';
+import { RateLimitService } from './services/rate-limit.service';
 
 @NgModule({
   declarations: [
@@ -71,7 +74,14 @@ import { AppRoutingModule } from './app-routing.module';
     MatTooltipModule,
     MatCheckboxModule
   ],
-  providers: [],
+  providers: [
+    RateLimitService,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: RateLimitInterceptor,
+      multi: true
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
